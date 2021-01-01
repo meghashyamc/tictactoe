@@ -1,9 +1,10 @@
 package models
 
 type Player interface {
-	Init()
+	Init(id int)
 	GetName() string
 	GetID() int
 	GetSymbol() string
-	GetNextMove() (int, int, bool)
+	GetOpponentSymbol() string
+	GetNextMove(*Board) (int, int, bool)
 }

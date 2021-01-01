@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -12,27 +13,30 @@ const (
 	emptySymbol = "*"
 )
 
-type Board [][]string
+type Board struct {
+	BoardPositions [][]string
+	LatestX        int
+	LatestY        int
+}
 
-func initBoard() Board {
+func initBoard() *Board {
 
-	return Board{[]string{emptySymbol, emptySymbol, emptySymbol},
-		[]string{emptySymbol, emptySymbol, emptySymbol},
-		[]string{emptySymbol, emptySymbol, emptySymbol}}
+	return &Board{BoardPositions: [][]string{{emptySymbol, emptySymbol, emptySymbol}, {emptySymbol, emptySymbol, emptySymbol},
+		{emptySymbol, emptySymbol, emptySymbol}}, LatestX: -1, LatestY: -1}
 
 }
 
-func (b Board) UpdateBoard(symbol string, xcoord int, ycoord int) error {
+func (b *Board) UpdateBoard(symbol string, xcoord int, ycoord int) error {
 
-	if b == nil {
+	if b == nil || b.BoardPositions == nil {
 		return errors.New("can't fill nil board")
 	}
 
-	if xcoord > len(b) {
+	if xcoord > len(b.BoardPositions) {
 		return errors.New("max x value is greater than 2")
 	}
 
-	if ycoord > len((b)[0]) {
+	if ycoord > len((b.BoardPositions)[0]) {
 		return errors.New("max y value is greater than 2")
 	}
 
@@ -40,16 +44,18 @@ func (b Board) UpdateBoard(symbol string, xcoord int, ycoord int) error {
 		return errors.New("invalid symbol")
 	}
 
-	b[xcoord][ycoord] = symbol
+	b.BoardPositions[xcoord][ycoord] = symbol
+	b.LatestX = xcoord
+	b.LatestY = ycoord
 	return nil
 }
 
-func (b Board) IsFull() bool {
+func (b *Board) IsFull() bool {
 
-	if b == nil {
+	if b == nil || b.BoardPositions == nil {
 		log.Fatal("can't check status of nil board")
 	}
-	for _, row := range b {
+	for _, row := range b.BoardPositions {
 		for _, symbol := range row {
 			if symbol == emptySymbol {
 				return false
@@ -60,17 +66,18 @@ func (b Board) IsFull() bool {
 
 }
 
-func (b Board) HasResult(symbol string, x int, y int) bool {
+func (b *Board) HasResult() bool {
 
-	if b == nil {
+	if b == nil || b.BoardPositions == nil {
 		log.Fatal("can't check result for nil board")
 	}
-	return b.isRowFull(symbol, x) || b.isColumnFull(symbol, y) || b.areDiagonalsFull(symbol, x, y)
+	symbol := b.BoardPositions[b.LatestX][b.LatestY]
+	return b.isRowFull(symbol, b.LatestX) || b.isColumnFull(symbol, b.LatestY) || b.areDiagonalsFull(symbol, b.LatestX, b.LatestY)
 }
 
-func (b Board) isRowFull(symbol string, x int) bool {
+func (b *Board) isRowFull(symbol string, x int) bool {
 
-	for _, currSymbol := range b[x] {
+	for _, currSymbol := range b.BoardPositions[x] {
 		if currSymbol != symbol {
 			return false
 		}
@@ -80,11 +87,11 @@ func (b Board) isRowFull(symbol string, x int) bool {
 
 }
 
-func (b Board) isColumnFull(symbol string, y int) bool {
+func (b *Board) isColumnFull(symbol string, y int) bool {
 
-	for row := 0; row < len(b); row++ {
+	for row := 0; row < len(b.BoardPositions); row++ {
 
-		if b[row][y] != symbol {
+		if b.BoardPositions[row][y] != symbol {
 			return false
 		}
 	}
@@ -92,48 +99,57 @@ func (b Board) isColumnFull(symbol string, y int) bool {
 
 }
 
-func (b Board) areDiagonalsFull(symbol string, x, y int) bool {
+func (b *Board) areDiagonalsFull(symbol string, x, y int) bool {
 
 	//case when we x,y correspond to center
 
 	if x == 1 && y == 1 {
-		return (b[0][0] == symbol && b[2][2] == symbol) ||
-			(b[2][0] == symbol && b[0][2] == symbol)
+		return (b.BoardPositions[0][0] == symbol && b.BoardPositions[2][2] == symbol) ||
+			(b.BoardPositions[2][0] == symbol && b.BoardPositions[0][2] == symbol)
 	}
 
-	if b[1][1] != symbol {
+	if b.BoardPositions[1][1] != symbol {
 		return false
 	}
 	if x == 0 && y == 0 {
-		return b[2][2] == symbol
+		return b.BoardPositions[2][2] == symbol
 	}
 
 	if x == 0 && y == 2 {
-		return b[2][0] == symbol
+		return b.BoardPositions[2][0] == symbol
 	}
 
 	if x == 2 && y == 0 {
-		return b[0][2] == symbol
+		return b.BoardPositions[0][2] == symbol
 	}
 
 	if x == 2 && y == 2 {
-		return b[0][0] == symbol
+		return b.BoardPositions[0][0] == symbol
 	}
 
 	return false
 
 }
 
-func (b Board) IsCellInBounds(x, y int) bool {
+func (b *Board) IsCellInBounds(x, y int) bool {
 
-	return 0 <= x && x <= len(b)-1 && 0 <= y && y <= len(b[0])-1
+	return 0 <= x && x <= len(b.BoardPositions)-1 && 0 <= y && y <= len(b.BoardPositions[0])-1
 }
-func (b Board) IsCellEmpty(x, y int) bool {
+func (b *Board) IsCellEmpty(x, y int) bool {
 
-	return b[x][y] == emptySymbol
+	return b.BoardPositions[x][y] == emptySymbol
 }
 
-func (b Board) IsMoveValid(x int, y int) bool {
+func (b *Board) IsMoveValid(x int, y int) bool {
 
 	return b.IsCellInBounds(x, y) && b.IsCellEmpty(x, y)
+}
+
+func (b *Board) Print() {
+	if b == nil || b.BoardPositions == nil {
+		log.Fatal("Cannot show nil board")
+	}
+	for i := 0; i < len(b.BoardPositions); i++ {
+		fmt.Println(b.BoardPositions[i])
+	}
 }

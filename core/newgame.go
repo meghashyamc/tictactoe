@@ -20,7 +20,7 @@ func InitializeNewGame(gameType string) *models.Game {
 		player2 = player
 	} else {
 		player := &models.AIPlayer{}
-		player.Init()
+		player.Init(2)
 		player.Symbol = zero
 		player2 = player
 	}

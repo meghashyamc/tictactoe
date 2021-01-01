@@ -8,7 +8,7 @@ type HumanPlayer struct {
 	Symbol string
 }
 
-func (p *HumanPlayer) Init() {
+func (p *HumanPlayer) Init(id int) {
 	return
 }
 func (p *HumanPlayer) GetName() string {
@@ -22,6 +22,14 @@ func (p *HumanPlayer) GetSymbol() string {
 	return p.Symbol
 }
 
-func (p *HumanPlayer) GetNextMove() (int, int, bool) {
+func (p *HumanPlayer) GetOpponentSymbol() string {
+
+	if p.Symbol == cross {
+		return zero
+	}
+	return cross
+}
+
+func (p *HumanPlayer) GetNextMove(*Board) (int, int, bool) {
 	return 0, 0, false
 }

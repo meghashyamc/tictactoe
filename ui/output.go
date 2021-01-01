@@ -20,15 +20,18 @@ func ShowPlayer(p models.Player) {
 
 }
 
-func ShowBoard(b models.Board) {
-
-	for i := 0; i < len(b); i++ {
-		fmt.Println(b[i])
+func ShowBoard(b *models.Board) {
+	if b == nil || b.BoardPositions == nil {
+		log.Fatal("Cannot show nil board")
+	}
+	fmt.Println("This is how the board now looks like:")
+	for i := 0; i < len(b.BoardPositions); i++ {
+		fmt.Println(b.BoardPositions[i])
 	}
 
 }
 
-func ShowGameEnd(boardFull bool, hasResult bool, b models.Board, p models.Player) {
+func ShowGameEnd(boardFull bool, hasResult bool, b *models.Board, p models.Player) {
 
 	ShowBoard(b)
 	fmt.Println("Game over")
@@ -38,6 +41,11 @@ func ShowGameEnd(boardFull bool, hasResult bool, b models.Board, p models.Player
 	} else if hasResult {
 		fmt.Println("The winner is", p.GetName()+". Congrats,"+p.GetName()+"!")
 	}
+}
+
+func ShowPlayerMove(p models.Player, x, y int) {
+
+	fmt.Println(p.GetName()+" just played their move:", x, y)
 }
 
 func ShowInvalidMove() {

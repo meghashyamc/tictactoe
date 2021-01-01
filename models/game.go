@@ -7,7 +7,7 @@ const (
 )
 
 type Game struct {
-	Board   Board
+	Board   *Board
 	Type    string
 	Players []Player
 }
